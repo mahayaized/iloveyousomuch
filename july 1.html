@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>♡</title>
+
+<style>
+html,body{
+    margin:0;
+    overflow:hidden;
+    background:#f7acff;
+    font-family: Garamond, serif;
+    color:hsl(32, 100%, 50%);
+}
+
+canvas{
+    position:absolute;
+    inset:0;
+}
+
+#text{
+    position:absolute;
+    width:100%;
+    text-align:center;
+    top:65%;
+    font-size:34px;
+    opacity:0;
+    transition:1s;
+    text-shadow:0 0 15px rgb(243, 88, 235);
+}
+
+#sub{
+    margin-top:18px;
+    font-size:24px;
+    opacity:.8;
+}
+
+#star {
+    position:absolute;
+    width:70px;
+    height:70px;
+    top:65px;
+    right:125px;
+    background:#fff9d8;
+    /* Creates a perfect 5-pointed star shape */
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    filter: drop-shadow(0 0 25px #fff7aa);
+    opacity:0;
+    transition:2s;
+}
+
+/* Subtle glowing pulse for the star */
+@keyframes pulse {
+    0% { transform: scale(1); filter: drop-shadow(0 0 20px #fff7aa); }
+    50% { transform: scale(1.08); filter: drop-shadow(0 0 35px #fffcf0); }
+    100% { transform: scale(1); filter: drop-shadow(0 0 20px #fff7aa); }
+}
+
+.twinkle {
+    animation: pulse 3s ease-in-out infinite;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div id="star"></div>
+
+<div id="text">
+    <div id="main"></div>
+    <div id="sub"></div>
+</div>
+
+<script>
+
+const c=document.getElementById("canvas");
+const ctx=c.getContext("2d");
+
+function resize(){
+c.width=window.innerWidth;
+c.height=window.innerHeight;
+}
+resize();
+window.onresize=resize;
+
+let leftX=-160;
+let rightX=window.innerWidth+120;
+
+let hearts=[];
+
+function stick(x,y,flip=false,hasGlasses=false){
+
+ctx.lineWidth=4;
+ctx.strokeStyle="#4B3B6B";
+
+ctx.beginPath();
+ctx.arc(x,y-90,18,0,Math.PI*2);
+ctx.stroke();
+
+// Eyes
+ctx.fillStyle="#4B3B6B";
+ctx.beginPath();
+ctx.arc(x-6, y-95, 2, 0, Math.PI*2);
+ctx.arc(x+6, y-95, 2, 0, Math.PI*2);
+ctx.fill();
+
+// Red Glasses
+if(hasGlasses) {
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = "#e63946";
+    
+    // Left Frame
+    ctx.beginPath();
+    ctx.arc(x-7, y-95, 5, 0, Math.PI*2);
+    ctx.stroke();
+    
+    // Right Frame
+    ctx.beginPath();
+    ctx.arc(x+7, y-95, 5, 0, Math.PI*2);
+    ctx.stroke();
+    
+    // Bridge & Sides
+    ctx.beginPath();
+    ctx.moveTo(x-2, y-95);
+    ctx.lineTo(x+2, y-95);
+    ctx.moveTo(x-12, y-95);
+    ctx.lineTo(x-17, y-93);
+    ctx.moveTo(x+12, y-95);
+    ctx.lineTo(x+17, y-93);
+    ctx.stroke();
+    
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "#4B3B6B";
+}
+
+// Smile
+ctx.beginPath();
+ctx.strokeStyle="#4B3B6B";
+ctx.arc(x, y-87, 7, 0.2, Math.PI-0.2);
+ctx.stroke();
+
+// Spine
+ctx.beginPath();
+ctx.moveTo(x,y-72);
+ctx.lineTo(x,y-10);
+
+// Hand-Holding Logic
+let isHolding = Math.abs(leftX - rightX) < 122;
+
+if(flip){
+    if(isHolding) {
+        ctx.moveTo(x,y-55);
+        ctx.lineTo(x+25,y-20);
+        ctx.moveTo(x,y-55);
+        ctx.lineTo(x-20,y-30);
+        ctx.lineTo(x-30,y-25);
+    } else {
+        ctx.moveTo(x,y-55);
+        ctx.lineTo(x+30,y-35);
+        ctx.moveTo(x,y-55);
+        ctx.lineTo(x-25,y-20);
+    }
+}else{
+    if(isHolding) {
+        ctx.moveTo(x,y-55);
+        ctx.lineTo(x-25,y-20);
+        ctx.moveTo(x,y-55);
+        ctx.lineTo(x+20,y-30);
+        ctx.lineTo(x+30,y-25);
+    } else {
+        ctx.moveTo(x,y-55);
+        ctx.lineTo(x-30,y-35);
+        ctx.moveTo(x,y-55);
+        ctx.lineTo(x+25,y-20);
+    }
+}
+
+// Legs
+ctx.moveTo(x,y-10);
+ctx.lineTo(x-18,y+35);
+
+ctx.moveTo(x,y-10);
+ctx.lineTo(x+18,y+35);
+
+ctx.stroke();
+
+}
+
+function heart(x,y){
+this.x=x;
+this.y=y;
+this.dy=Math.random()*1+0.5;
+this.size=Math.random()*8+8;
+}
+
+function drawHeart(h){
+ctx.fillStyle="pink";
+ctx.beginPath();
+
+ctx.moveTo(h.x,h.y);
+
+ctx.bezierCurveTo(h.x-10,h.y-15,h.x-25,h.y+5,h.x,h.y+25);
+ctx.bezierCurveTo(h.x+25,h.y+5,h.x+10,h.y-15,h.x,h.y);
+
+ctx.fill();
+}
+
+function animate(){
+
+ctx.clearRect(0,0,c.width,c.height);
+
+if(leftX<c.width/2-45) leftX+=2.3;
+if(rightX>c.width/2+45) rightX-=2.3;
+
+stick(leftX,c.height/2,false,true); 
+stick(rightX,c.height/2,true,false);
+
+if(Math.abs(leftX-rightX)<122){
+    if(Math.random()<0.15){
+        hearts.push(new heart(c.width/2,c.height/2-100));
+    }
+}
+
+for(let i=0;i<hearts.length;i++){
+    hearts[i].y-=hearts[i].dy;
+    drawHeart(hearts[i]);
+}
+
+requestAnimationFrame(animate);
+
+}
+
+animate();
+
+const message="one beautiful month out of forever meri jaan";
+
+function type(text,element,delay){
+
+let i=0;
+
+element.innerHTML="";
+
+let interval=setInterval(()=>{
+
+element.innerHTML+=text[i];
+
+i++;
+
+if(i>=text.length) clearInterval(interval);
+
+},delay);
+
+}
+
+setTimeout(()=>{
+const starEl = document.getElementById("star");
+starEl.style.opacity=1;
+// Adds the pulse animation class right after fading in
+setTimeout(() => starEl.classList.add("twinkle"), 2000);
+},6000);
+
+setTimeout(()=>{
+
+document.getElementById("text").style.opacity=1;
+
+type(message,document.getElementById("main"),70);
+
+setTimeout(()=>{
+
+type("i love u my ibru. i hope we're infinite<3 ",document.getElementById("sub"),65);
+
+},3400);
+
+},7600);
+
+</script>
+
+</body>
+</html>
